@@ -6,6 +6,7 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.scene.shape.Box;
 
+import thegame.util.DeltaTime;
 import thegame.util.State;
 import thegame.world.World;
 
@@ -14,9 +15,11 @@ public class Main extends SimpleApplication {
 	private static Main instance;
 	private static World world;
 	
+	private long nextChunkUpdate = 0;
+	
 	public static State state = State.STARTUP;
 	
-	public static boolean toggle = true;
+	public static boolean isRunning = true;
 	
 	
 	public Main() {
@@ -31,32 +34,18 @@ public class Main extends SimpleApplication {
 		world = new World();
 		world.generate();
 		flyCam.setMoveSpeed(25f);
-		initKeys();
 	}
-	
-	private void initKeys() {
-	    // You can map one or several inputs to one named action
-	    inputManager.addMapping("Pause",  new KeyTrigger(KeyInput.KEY_SPACE));
-	    // Add the names to the action listener.
-	    inputManager.addListener(actionListener,"Pause"); 
-	 
-	  }
-	 
-	  private ActionListener actionListener = new ActionListener() {
-	    public void onAction(String name, boolean keyPressed, float tpf) {
-	      if (name.equals("Pause") && !keyPressed) {
-	        toggle = !toggle;
-	      }
-	    }
-	  };
 	
 	@Override
 	public void update() {
-		world.update();
 		super.update();
-		
+		if (System.currentTimeMillis() >= nextChunkUpdate) chunkUpdate();
 	}
 	
+	private void chunkUpdate() {
+		nextChunkUpdate = DeltaTime.getTargetTime(500);
+		world.update();
+	}
 	
 	
 	public static void main(String[] args) {
