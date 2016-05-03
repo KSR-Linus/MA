@@ -1,11 +1,13 @@
 package thegame.block;
 
+import com.jme3.material.Material;
 import com.jme3.scene.Spatial;
 
 public abstract class Block {
 	
 	public final String ID;
 	Spatial s;
+	Material m;
 	
 	public Block(String id) {
 		ID = id;

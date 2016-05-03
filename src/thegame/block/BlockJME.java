@@ -15,7 +15,7 @@ public class BlockJME extends Block {
 		super("base:blockjme");
 		Box b = new Box(.5f, .5f, .5f);
 		s = new Geometry(ID, b);
-		Material m = new Material(Main.getInstance().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+		m = new Material(Main.getInstance().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
 		Random r = new Random();
 		m.setColor("Color", new ColorRGBA(r.nextFloat(), r.nextFloat(), r.nextFloat(), 1));
 		s.setMaterial(m);
