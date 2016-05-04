@@ -6,10 +6,14 @@ import thegame.Main;
 import thegame.block.Block;
 import thegame.block.BlockJME;
 
+import com.jme3.collision.CollisionResults;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 
@@ -17,7 +21,11 @@ public class World {
 	
 	public HashMap<String, Chunk> chunks = new HashMap<String, Chunk>();
 	
+	private Chunk chunk;
 	private Block selected;
+	
+	private int x = 0, y = 0, z = 0;
+	
 	private Spatial marking;
 	
 	public World() {
@@ -28,7 +36,7 @@ public class World {
 			}
 		}
 		Chunk c = chunks.get("0:0");
-		c.placeBlock(new BlockJME(), 10, 20, 10);
+		c.placeBlock(new BlockJME(10, 20, 10), 10, 20, 10);
 		Box b = new Box(.51f, .51f, .51f);
 		Material m = new Material(Main.getInstance().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
 		m.setColor("Color", ColorRGBA.White);
@@ -46,7 +54,7 @@ public class World {
 					Chunk c = new Chunk(cx+x, cy+y);
 					for (int x1 = 0; x1 < 16; x1++) {
 						for (int z = 0; z < 16; z++) {
-							c.placeBlock(new BlockJME(), x1, 0, z);
+							c.placeBlock(new BlockJME(x1, 0, z), x1, 0, z);
 						}
 					}
 					chunks.put(id, c);
@@ -58,60 +66,42 @@ public class World {
 		}
 	}
 	
-	public void updateBlockSelection() {
-		Vector3f ct = Main.getInstance().getCamera().getLocation();
-		float[] c = {ct.x, ct.y, ct.z};
-		Vector3f dt = Main.getInstance().getCamera().getDirection();
-		float[] d = {dt.x, dt.y, dt.z};
-		int[] k = new int[3];
-		if (d[0] < 0) {
-			k[0] = (int) Math.floor(c[0]); } else {
-			k[0] = (int) Math.floor(c[0]) + 1; }
-		if (d[1] < 0) {
-			k[1] = (int) Math.floor(c[1]); } else {
-			k[1] = (int) Math.floor(c[1]) + 1; }
-		if (d[2] < 0) {
-			k[2] = (int) Math.floor(c[2]); } else {
-			k[2] = (int) Math.floor(c[2]) + 1; }
-		float[] f = new float[3];
-		if (d[0] == 0) f[0] = 6; else f[0] = (1/d[0])*(k[0] - c[0]);
-		if (d[1] == 0) f[1] = 6; else f[1] = (1/d[1])*(k[1] - c[1]);
-		if (d[2] == 0) f[2] = 6; else f[2] = (1/d[2])*(k[2] - c[2]);
-		float fc = 0;
-		int bx = 0, by = 0, bz = 0;
-		while (fc < 5) {
-			for (int i = 0; i < 3; i++) {
-				if (f[i] == fc) {
-					if (d[i] < 0) k[i]--; else k[i]++;
-					if (d[i] == 0) f[i] = 6; else f[i] = (1/d[i])*(k[i] - c[i]);
-				}
+	public void updateBlockSelection2(Camera c, Node root) {
+		CollisionResults res = new CollisionResults();
+		Ray r = new Ray(c.getLocation(), c.getDirection());
+		root.collideWith(r, res);
+		if (res.size() > 0) {
+			x = (int) Math.floor(res.getClosestCollision().getGeometry().getWorldTranslation().x);
+			y = (int) Math.floor(res.getClosestCollision().getGeometry().getWorldTranslation().y);
+			z = (int) Math.floor(res.getClosestCollision().getGeometry().getWorldTranslation().z);
+			chunk = chunks.get(x / 16 + ":" + z / 16);
+			selected = chunk.blocks[Math.abs(x%16)][Math.abs(y)][Math.abs(z%16)];
+			if (!root.hasChild(marking) && c.getLocation().distance(res.getClosestCollision().getContactPoint()) < 5) {
+				root.attachChild(marking);
 			}
-			float fmin = f[0];
-			for (int i = 1; i < 3; i++) {
-				if (f[i] < fmin) {
-					fmin = f[i];
-				}
+			if (root.hasChild(marking) && c.getLocation().distance(res.getClosestCollision().getContactPoint()) > 5) {
+				root.detachChild(marking);
+				selected = null;
 			}
-			fc = fmin;
-			Vector3f tmp = ct.add(dt.mult(fc));
-			bx = (int) Math.floor(tmp.x);
-			by = (int) Math.floor(tmp.y+.5);
-			bz = (int) Math.floor(tmp.z);
-			Chunk chunk = chunks.get(bx / 16 + ":" + bz / 16);
-			selected = chunk.blocks[Math.abs(bx % 16)][Math.abs(by)][Math.abs(bz % 16)];
-			if (selected != null) {
-				break;
-			}
-		}
-		if (fc < 5 && selected != null) {
-			if (!Main.getInstance().getRootNode().hasChild(marking))
-				Main.getInstance().getRootNode().attachChild(marking);
-			marking.setLocalTranslation((float) bx, (float) by, (float) bz);
+			marking.setLocalTranslation(res.getClosestCollision().getGeometry().getWorldTranslation());
 		} else {
-			if (Main.getInstance().getRootNode().hasChild(marking)) {
-				Main.getInstance().getRootNode().detachChild(marking);
+			if (root.hasChild(marking)) {
+				root.detachChild(marking);
+				selected = null;
 			}
 		}
+		if (selected != null)System.out.println(selected.ID);
+	}
+	
+	
+	public void destroySelected() {
+		if (selected != null) {
+			chunk.destroyBlock(Math.abs(x%16), Math.abs(y), Math.abs(z%16));
+		}
+	}
+	
+	public void interactWithSelected() {
+		selected.onInteracted(Math.abs(x%16), Math.abs(y), Math.abs(z%16));
 	}
 
 	public World generate() {
@@ -119,7 +109,7 @@ public class World {
 		for (Chunk c : chunks.values()) {
 			for (int x = 0; x < 16; x++) {
 				for (int z = 0; z < 16; z++) {
-					c.placeBlock(new BlockJME(), x, 0, z);
+					c.placeBlock(new BlockJME(x, 0, z), x, 0, z);
 				}
 			}
 		}

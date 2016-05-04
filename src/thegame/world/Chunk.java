@@ -1,6 +1,9 @@
 package thegame.world;
 
+import java.util.HashMap;
+
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 
 import thegame.Main;
 import thegame.block.Block;
@@ -20,14 +23,19 @@ public class Chunk {
 	
 	public void destroyBlock(int x, int y, int z) {
 		blocks[x][y][z].onBlockDestroyed(x, y, z);
-		Main.getInstance().getRootNode().detachChild(blocks[x][y][z].getSpatial());
+		node.detachChild(blocks[x][y][z].getSpatial());
 		blocks[x][y][z] = null;
 	}
 	
 	public void placeBlock(Block b, int x, int y, int z) {
-		blocks[x][y][z] = b.clone();
-		b.getSpatial().setLocalTranslation(x, y, z);
-		node.attachChild(b.getSpatial());
+		Block tmp = b.clone(x, y, z);
+		blocks[x][y][z] = tmp;
+		tmp.getSpatial().setLocalTranslation(-x, y, z);
+		node.attachChild(tmp.getSpatial());
+	}
+	
+	public static String name(int x, int y, int z) {
+		return x + ":" + y + ":" + z;
 	}
 	
 	public void update() {
