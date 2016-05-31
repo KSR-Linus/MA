@@ -39,7 +39,7 @@ public class World {
 		c.placeBlock(new BlockJME(10, 20, 10), 10, 20, 10);
 		Box b = new Box(.51f, .51f, .51f);
 		Material m = new Material(Main.getInstance().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-		m.setColor("Color", ColorRGBA.White);
+		m.setColor("Color", new ColorRGBA(255, 255, 255, 25));
 		marking = new Geometry("selection" , b);
 		marking.setMaterial(m);
 	}
@@ -54,9 +54,10 @@ public class World {
 					Chunk c = new Chunk(cx+x, cy+y);
 					for (int x1 = 0; x1 < 16; x1++) {
 						for (int z = 0; z < 16; z++) {
-							c.placeBlock(new BlockJME(x1, 0, z), x1, 0, z);
+							c.placeBlockCreation(new BlockJME(x1, 0, z), x1, 0, z);
 						}
 					}
+					Main.getInstance().updatePhysics();
 					chunks.put(id, c);
 				}
 			}
@@ -74,9 +75,11 @@ public class World {
 			x = (int) Math.floor(res.getClosestCollision().getGeometry().getWorldTranslation().x);
 			y = (int) Math.floor(res.getClosestCollision().getGeometry().getWorldTranslation().y);
 			z = (int) Math.floor(res.getClosestCollision().getGeometry().getWorldTranslation().z);
+			if (x <= 0) x -= 15;
+			if (z >= 0) z += 15;
 			chunk = chunks.get(x / 16 + ":" + z / 16);
 			selected = chunk.blocks[Math.abs(x%16)][Math.abs(y)][Math.abs(z%16)];
-			if (!root.hasChild(marking) && c.getLocation().distance(res.getClosestCollision().getContactPoint()) < 5) {
+			if (!root.hasChild(marking) && c.getLocation().distance(res.getClosestCollision().getContactPoint()) < 5 && selected instanceof Block) {
 				root.attachChild(marking);
 			}
 			if (root.hasChild(marking) && c.getLocation().distance(res.getClosestCollision().getContactPoint()) > 5) {
@@ -90,29 +93,42 @@ public class World {
 				selected = null;
 			}
 		}
-		if (selected != null)System.out.println(selected.ID);
+		//if (selected != null)System.out.println(selected.ID);
 	}
 	
 	
 	public void destroySelected() {
+		int tx = Math.abs(x%16), tz = Math.abs(z%16);
+		
+		if (x < 0) tx = 15 - tx;
+		if (z > 0) tz = 15 - tz;
+		
 		if (selected != null) {
-			chunk.destroyBlock(Math.abs(x%16), Math.abs(y), Math.abs(z%16));
+			chunk.destroyBlock(tx, Math.abs(y), tz);
+			marking.removeFromParent();
+		//	Main.getInstance().updatePhysics();
+			System.out.println(selected.toString());
 		}
 	}
 	
 	public void interactWithSelected() {
-		selected.onInteracted(Math.abs(x%16), Math.abs(y), Math.abs(z%16));
+		if (selected != null) {
+			selected.onInteracted(Math.abs(x%16), Math.abs(y), Math.abs(z%16));
+		}
 	}
 
 	public World generate() {
 		World w = new World();
+		System.out.println("Initialtinng world generation");
 		for (Chunk c : chunks.values()) {
 			for (int x = 0; x < 16; x++) {
 				for (int z = 0; z < 16; z++) {
-					c.placeBlock(new BlockJME(x, 0, z), x, 0, z);
+					c.placeBlockCreation(new BlockJME(x, 0, z), x, 0, z);
 				}
 			}
 		}
+		System.out.println("World generated");
+		Main.getInstance().updatePhysics();
 		return w;
 	}
 
