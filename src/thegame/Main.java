@@ -1,9 +1,15 @@
 package thegame;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import thegame.block.Block;
+import thegame.console.Console;
 import thegame.item.Item;
 import thegame.item.ItemJME;
 import thegame.util.DeltaTime;
@@ -22,6 +28,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.light.Light;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -48,13 +55,21 @@ public class Main extends SimpleApplication {
 	private long nextChunkUpdate = 0;
 
 	public static State state = State.STARTUP;
+	
+	private BitmapText focus;
+	
+	public static ConcurrentHashMap<String, Block> blockReg = new ConcurrentHashMap<String, Block>();
 
 	public static boolean isRunning = true;
+	
+	public static boolean consoleOpen = false;
 	
 	private boolean left = false, right = false, forward = false, backward = false;
 	
 	Node n;
 	RigidBodyControl c;
+	static Console console = new Console();
+	BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
 
 	public Main() {
 		start();
@@ -73,6 +88,11 @@ public class Main extends SimpleApplication {
 		
 		world = new World();
 		world.generate();
+		
+		focus = new BitmapText(assetManager.loadFont("Interface/Fonts/Default.fnt"), false);
+		focus.setText("N/A");
+		focus.setLocalTranslation(10, settings.getHeight() - 10, 0);
+		guiNode.attachChild(focus);
 		
 		
 //		CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(0.5f, 2f);
@@ -106,7 +126,9 @@ public class Main extends SimpleApplication {
 		inputManager.addMapping("backward", new KeyTrigger(KeyInput.KEY_S));
 		inputManager.addMapping("right", new KeyTrigger(KeyInput.KEY_D));
 		
-		inputManager.addListener(l, "leftmouse", "rightmouse", "forward", "left", "backward", "right");
+		inputManager.addMapping("console", new KeyTrigger(KeyInput.KEY_RETURN));
+		
+		inputManager.addListener(l, "leftmouse", "rightmouse", "forward", "left", "backward", "right", "console");
 	}
 	
 	public void updatePhysics() {
@@ -136,6 +158,7 @@ public class Main extends SimpleApplication {
 //      camLeft.set(cam.getLeft()).multLocal(0.4f);
 		if (System.currentTimeMillis() >= nextChunkUpdate) chunkUpdate();
 		world.updateBlockSelection2(getCamera(), rootNode);
+		focus.setText(world.getFocusedBlockCoords());
 //		System.out.println(cam.getLocation());
 //		walkDirection.set(0, 0, 0);
 //		if (forward) walkDirection.addLocal(camDir);
@@ -171,6 +194,30 @@ public class Main extends SimpleApplication {
 				break;
 			case "jump":
 				player.jump();
+				break;
+			case "console":
+				loseFocus();
+				inputManager.setCursorVisible(true);
+				try {
+					consoleOpen = true;
+					console.executeCommand(consoleReader.readLine());
+				} catch (IOException e) {
+				}
+				gainFocus();
+				inputManager.setCursorVisible(false);
+				consoleOpen = false;
+				break;
+			case "esc":
+				if (consoleOpen) {
+					try {
+						consoleReader.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					consoleOpen = false;
+					gainFocus();
+					inputManager.setCursorVisible(false);
+				}
 				break;
 			}
 		}
@@ -219,5 +266,9 @@ public class Main extends SimpleApplication {
 
 	public static World getWorld() {
 		return world;
+	}
+
+	public static Console getConsole() {
+		return console;
 	}
 }

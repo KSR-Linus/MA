@@ -36,6 +36,10 @@ public abstract class Block {
 		return s;
 	}
 	
+	public boolean isInteractable() {
+		return false;
+	}
+	
 	public RigidBodyControl getRigidBodyControl() {
 		return rbc;
 	}

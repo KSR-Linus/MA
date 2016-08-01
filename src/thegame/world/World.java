@@ -23,6 +23,7 @@ public class World {
 	
 	private Chunk chunk;
 	private Block selected;
+	private Vector3f contact = new Vector3f();
 	
 	private int x = 0, y = 0, z = 0;
 	
@@ -38,7 +39,7 @@ public class World {
 		Chunk c = chunks.get("0:0");
 		c.placeBlock(new BlockJME(10, 20, 10), 10, 20, 10);
 		Box b = new Box(.51f, .51f, .51f);
-		Material m = new Material(Main.getInstance().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+		Material m = new Material(Main.getInstance().getAssetManager(), "Common/MatDefs/Misc/ColoredTextured.j3md");
 		m.setColor("Color", new ColorRGBA(255, 255, 255, 25));
 		marking = new Geometry("selection" , b);
 		marking.setMaterial(m);
@@ -72,6 +73,7 @@ public class World {
 		Ray r = new Ray(c.getLocation(), c.getDirection());
 		root.collideWith(r, res);
 		if (res.size() > 0) {
+			contact = res.getClosestCollision().getContactPoint();
 			x = (int) Math.floor(res.getClosestCollision().getGeometry().getWorldTranslation().x);
 			y = (int) Math.floor(res.getClosestCollision().getGeometry().getWorldTranslation().y);
 			z = (int) Math.floor(res.getClosestCollision().getGeometry().getWorldTranslation().z);
@@ -112,8 +114,27 @@ public class World {
 	}
 	
 	public void interactWithSelected() {
+		int tx = Math.abs(x%16), tz = Math.abs(z%16);
+		
+		if (x < 0) tx = 15 - tx;
+		if (z > 0) tz = 15 - tz;
 		if (selected != null) {
-			selected.onInteracted(Math.abs(x%16), Math.abs(y), Math.abs(z%16));
+			if (selected.isInteractable()) {
+				selected.onInteracted(Math.abs(tx%16), Math.abs(y), Math.abs(tz%16));
+			} else {
+				int x = Math.round(contact.x), y = Math.round(contact.y), z = Math.round(contact.z);
+				if (x <= 0) x -= 15;
+				if (z >= 0) z += 15;
+				Chunk c = chunks.get(x / 16 + ":" + z / 16);
+				int tx2 = x % 16;
+				int tz2 = z % 16;
+
+				if (tx2 < 0) tx2 = 15 + tx2;
+				if (tz2 > 0) tz2 = 15 - tz2;
+				
+				if (c.blocks[tx2][y][tz2] == null) c.placeBlock(new BlockJME(tx2, y, tz2), tx2, y, tz2);
+				System.out.println(x + ":" + y + ":" + z);
+			}
 		}
 	}
 
@@ -130,6 +151,14 @@ public class World {
 		System.out.println("World generated");
 		Main.getInstance().updatePhysics();
 		return w;
+	}
+	
+	public String getFocusedBlockCoords() {
+		if (marking != null && Main.getInstance().getRootNode().hasChild(marking)) {
+			return "" + marking.getWorldTranslation().x + ", " + marking.getWorldTranslation().y + ", " + marking.getWorldTranslation().z;
+		} else {
+			return "N/A";
+		}
 	}
 
 }
