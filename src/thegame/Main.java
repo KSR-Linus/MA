@@ -6,12 +6,19 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.reflections.Reflections;
+
 import thegame.block.Block;
+import thegame.block.BlockReg;
+import thegame.console.ACommand;
+import thegame.console.Command;
 import thegame.console.Console;
 import thegame.item.Item;
 import thegame.item.ItemJME;
+import thegame.item.ItemReg;
 import thegame.util.DeltaTime;
 import thegame.util.State;
 import thegame.world.World;
@@ -57,8 +64,9 @@ public class Main extends SimpleApplication {
 	public static State state = State.STARTUP;
 	
 	private BitmapText focus;
-	
+
 	public static ConcurrentHashMap<String, Block> blockReg = new ConcurrentHashMap<String, Block>();
+	public static ConcurrentHashMap<String, Item> itemReg = new ConcurrentHashMap<String, Item>();
 
 	public static boolean isRunning = true;
 	
@@ -77,6 +85,32 @@ public class Main extends SimpleApplication {
 
 	@Override
 	public void simpleInitApp() {
+		
+		//Registering Blocks
+		
+		Reflections  ref0 = new Reflections("thegame.block");
+		Set<Class<?>> classes0 = ref0.getTypesAnnotatedWith(BlockReg.class);
+		for (Class<?> c : classes0) {
+			try {
+				Block b = (Block) c.newInstance();
+				blockReg.put(c.getAnnotation(BlockReg.class).ID(), b);
+				System.out.println("Registered Block: " + c.getAnnotation(BlockReg.class).ID());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//Registering Items
+		Reflections  ref1 = new Reflections("thegame.block");
+		Set<Class<?>> classes1 = ref1.getTypesAnnotatedWith(ItemReg.class);
+		for (Class<?> c : classes1) {
+			try {
+				Item i = (Item) c.newInstance();
+				itemReg.put(c.getAnnotation(ItemReg.class).ID(), i);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		
 		flyCam.setMoveSpeed(25f);
 		getCamera().setLocation(new Vector3f(0, 5, 0));

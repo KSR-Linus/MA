@@ -1,12 +1,11 @@
-package thegame.console;
+package thegame.block;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Command {
+public @interface BlockReg {
 	
-	public String modName();
-	public String name();
+	public String ID();
 	
 }

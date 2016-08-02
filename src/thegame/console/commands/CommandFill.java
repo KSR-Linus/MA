@@ -43,7 +43,8 @@ public class CommandFill extends ACommand {
 			
 			break;
 		default: 
-			c.print("Usage: /fill x1,y1,z1 x2,y2,z2 block | -b x,y,z width,length,height block");
+			if (c != null) c.print("Usage: /fill x1,y1,z1 x2,y2,z2 block | -b x,y,z width,length,height block");
+			else System.out.println("Usage: /fill x1,y1,z1 x2,y2,z2 block | -b x,y,z width,length,height block");
 		}
 	}
 	

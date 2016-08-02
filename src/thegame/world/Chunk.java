@@ -42,7 +42,7 @@ public class Chunk {
 	}
 	
 	public void placeBlockCreation(Block b, int x, int y, int z) {
-		Block tmp = b.clone(x, y, z);
+		Block tmp = b.clone();
 		blocks[x][y][z] = tmp;
 		tmp.getSpatial().setLocalTranslation(x, y, -z);
 		node.attachChild(tmp.getSpatial());
@@ -58,7 +58,7 @@ public class Chunk {
 	}
 	
 	public void placeBlock(Block b, int x, int y, int z) {
-		Block tmp = b.clone(x, y, z);
+		Block tmp = b.clone();
 		blocks[x][y][z] = tmp;
 		tmp.getSpatial().setLocalTranslation(x, y, -z);
 		node.attachChild(tmp.getSpatial());

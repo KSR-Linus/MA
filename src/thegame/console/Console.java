@@ -31,11 +31,11 @@ public class Console {
 	
 	public void executeCommand(String in) {
 		if (in.startsWith("/")) {
-			in.replaceFirst("/", "");
+			in = in.split("/")[1];
 			if (cmds.containsKey(in.split(" ")[0])) {
 				cmds.get(in.split(" ")[0]).run(Arrays.copyOfRange(in.split(" "), 1, in.split(" ").length));
 			} else {
-				print("Unknown Command.");
+				print("Unknown Command: " + in.split(" ")[0]);
 			}
 		}
 	}

@@ -37,10 +37,10 @@ public class World {
 			}
 		}
 		Chunk c = chunks.get("0:0");
-		c.placeBlock(new BlockJME(10, 20, 10), 10, 20, 10);
+		c.placeBlock(new BlockJME(), 10, 20, 10);
 		Box b = new Box(.51f, .51f, .51f);
 		Material m = new Material(Main.getInstance().getAssetManager(), "Common/MatDefs/Misc/ColoredTextured.j3md");
-		m.setColor("Color", new ColorRGBA(255, 255, 255, 25));
+		m.setColor("Color", new ColorRGBA(1, 1, 1, 0.2f));
 		marking = new Geometry("selection" , b);
 		marking.setMaterial(m);
 	}
@@ -55,7 +55,7 @@ public class World {
 					Chunk c = new Chunk(cx+x, cy+y);
 					for (int x1 = 0; x1 < 16; x1++) {
 						for (int z = 0; z < 16; z++) {
-							c.placeBlockCreation(new BlockJME(x1, 0, z), x1, 0, z);
+							c.placeBlockCreation(Main.blockReg.get("base:block_jme"), x1, 0, z);
 						}
 					}
 					Main.getInstance().updatePhysics();
@@ -132,7 +132,7 @@ public class World {
 				if (tx2 < 0) tx2 = 15 + tx2;
 				if (tz2 > 0) tz2 = 15 - tz2;
 				
-				if (c.blocks[tx2][y][tz2] == null) c.placeBlock(new BlockJME(tx2, y, tz2), tx2, y, tz2);
+				if (c.blocks[tx2][y][tz2] == null) c.placeBlock(new BlockJME(), tx2, y, tz2);
 				System.out.println(x + ":" + y + ":" + z);
 			}
 		}
@@ -144,13 +144,17 @@ public class World {
 		for (Chunk c : chunks.values()) {
 			for (int x = 0; x < 16; x++) {
 				for (int z = 0; z < 16; z++) {
-					c.placeBlockCreation(new BlockJME(x, 0, z), x, 0, z);
+					c.placeBlockCreation(Main.blockReg.get("base:block_jme"), x, 0, z);
 				}
 			}
 		}
 		System.out.println("World generated");
 		Main.getInstance().updatePhysics();
 		return w;
+	}
+	
+	public void placeBlockAt(int x, int y, int z, Block b) {
+		chunks.get("0:0").placeBlock(b, x, y, z);
 	}
 	
 	public String getFocusedBlockCoords() {
