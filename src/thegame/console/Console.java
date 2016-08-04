@@ -19,6 +19,7 @@ public class Console {
 			try {
 				ACommand cmd = (ACommand) c.newInstance();
 				cmds.put(c.getAnnotation(Command.class).name(), cmd);
+				System.out.println("Registered Command: " + c.getAnnotation(Command.class).name());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

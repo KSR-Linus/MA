@@ -36,6 +36,10 @@ public abstract class Item {
 	
 	public abstract void onDestroyed(float x, float y, float z);
 	
+	public void destroy() {
+		Main.getInstance().getRootNode().detachChild(geom);
+	}
+	
 	public static Node getGeometry(Image img) {
 		Node tmp = new Node();
 		int x = img.getWidth(), y = img.getHeight();

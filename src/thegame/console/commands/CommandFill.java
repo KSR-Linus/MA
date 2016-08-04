@@ -35,6 +35,10 @@ public class CommandFill extends ACommand {
 				pos2[0] = Integer.parseInt(p2[0]);
 				pos2[1] = Integer.parseInt(p2[1]);
 				pos2[2] = Integer.parseInt(p2[2]);
+				for (int x = pos1[0]; x <= pos2[0]; x++) for (int y = pos1[1]; y <= pos2[1]; y++) for (int z = pos1[2]; z <= pos2[2]; z++) {
+					if (args[2].equals("air")) Main.getWorld().destroyAt(x, y, z);
+					else Main.getWorld().placeBlockAt(x, y, z, Main.blockReg.get(args[2]));
+				}
 			} catch (NumberFormatException e) {
 				c.print("Coordinates must be numbers");
 			}

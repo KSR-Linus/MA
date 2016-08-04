@@ -1,7 +1,5 @@
 package thegame.block;
 
-import java.util.Random;
-
 import thegame.Main;
 
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;

@@ -13,9 +13,13 @@ import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.VertexBuffer;
+import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Line;
 
 public class World {
 	
@@ -38,10 +42,39 @@ public class World {
 		}
 		Chunk c = chunks.get("0:0");
 		c.placeBlock(new BlockJME(), 10, 20, 10);
-		Box b = new Box(.51f, .51f, .51f);
-		Material m = new Material(Main.getInstance().getAssetManager(), "Common/MatDefs/Misc/ColoredTextured.j3md");
-		m.setColor("Color", new ColorRGBA(1, 1, 1, 0.2f));
-		marking = new Geometry("selection" , b);
+		
+		Mesh mesh = new Mesh();
+		mesh.setBuffer(VertexBuffer.Type.Position, 3, new float[] {
+				 .5f,  .5f,  .5f, //0
+				-.5f,  .5f,  .5f, //1
+				 .5f, -.5f,  .5f, //2
+				-.5f, -.5f,  .5f, //3
+				 .5f,  .5f, -.5f, //4
+				-.5f,  .5f, -.5f, //5
+				 .5f, -.5f, -.5f, //6
+				-.5f, -.5f, -.5f, //7
+		});
+		
+		mesh.setBuffer(VertexBuffer.Type.Index, 2, new short[] {
+				 0, 1,
+				 0, 2,
+				 0, 4,
+				 1, 5,
+				 1, 3,
+				 5, 7,
+				 5, 4,
+				 4, 6,
+				 3, 2,
+				 7, 3,
+				 6, 7,
+				 2, 6,
+		});
+		
+		mesh.setMode(Mesh.Mode.Lines);
+		
+		Material m = new Material(Main.getInstance().getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+		m.setColor("Color", new ColorRGBA(0, 0, 0, 1));
+		marking = new Geometry("selection" , mesh);
 		marking.setMaterial(m);
 	}
 	
@@ -154,7 +187,24 @@ public class World {
 	}
 	
 	public void placeBlockAt(int x, int y, int z, Block b) {
+		int cx = x/16;
+		int cy = z/16;
 		chunks.get("0:0").placeBlock(b, x, y, z);
+	}
+	
+	public void destroyAt(int x, int y, int z) {
+		if (x <= 0) x -= 15;
+		if (z >= 0) z += 15;
+		Chunk chunk = chunks.get(x / 16 + ":" + z / 16);
+		
+		int tx = Math.abs(x%16), tz = Math.abs(z%16);
+		
+		if (selected != null) {
+			chunk.destroyBlock(tx, Math.abs(y), tz);
+			marking.removeFromParent();
+		//	Main.getInstance().updatePhysics();
+			System.out.println(selected.toString());
+		}
 	}
 	
 	public String getFocusedBlockCoords() {

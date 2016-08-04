@@ -1,0 +1,9 @@
+The fill command takes two points as arguments. It will
+replace every block in between the two points with the block
+given as last argument.
+
+By giving a -b after the command name, you can define a
+point and the size you want.
+
+Usage: /fill x1,y1,z1 x2,y2,z2 block
+       /fill -b x,y,z width,height,depth block

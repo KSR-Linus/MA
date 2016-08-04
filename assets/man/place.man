@@ -1,0 +1,3 @@
+Places a specified block at giving coordinates, replacing all existing blocks.
+
+Usage: /place x y z block

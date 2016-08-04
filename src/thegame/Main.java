@@ -41,12 +41,14 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
 
+import de.lessvoid.nifty.controls.textfield.builder.TextFieldBuilder;
+
 public class Main extends SimpleApplication {
 
 	private static Main instance;
 	private static World world;
 	
-	ConcurrentHashMap<Item, Byte> items = new ConcurrentHashMap<Item, Byte>();
+	public ConcurrentHashMap<Item, Byte> items = new ConcurrentHashMap<Item, Byte>();
 	
 	private static Spatial sceneModel;
 	private static CharacterControl player;

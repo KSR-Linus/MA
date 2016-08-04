@@ -15,6 +15,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
+import com.jme3.scene.shape.Line;
 
 import thegame.Main;
 import thegame.block.Block;
@@ -27,7 +28,7 @@ public class Chunk {
 	public Block[][][] blocks = new Block[16][128][16];
 	private Node node = new Node();
 	
-	private Control ctrl;
+	private RigidBodyControl ctrl;
 	
 	
 	private boolean loaded = true;
@@ -44,7 +45,7 @@ public class Chunk {
 	public void placeBlockCreation(Block b, int x, int y, int z) {
 		Block tmp = b.clone();
 		blocks[x][y][z] = tmp;
-		tmp.getSpatial().setLocalTranslation(x, y, -z);
+		tmp.getSpatial().setLocalTranslation(x, y, -z); 
 		node.attachChild(tmp.getSpatial());
 	}
 	
